@@ -9,6 +9,7 @@
 #include <ROOT/TDataSource.hxx>
 #include <ROOT/TDFUtils.hxx> // GenStaticSeq, StaticSeq
 #include <tuple>
+#include <unordered_map>
 
 /// \brief A concrete TDataSource implementation that reads MDF files
 template <typename... Decoders>
@@ -33,6 +34,9 @@ class TMDFDataSource : public ROOT::Experimental::TDF::TDataSource {
    std::vector<TRecordReader> fRecordReaders;
    /// Per-slot pointers to column values. Use as fColumnValues[slot][columnIndex].
    std::vector<std::vector<void *>> fColumnValues;
+   /// Unordered map entry->file_position for the first entries of each range.
+   /// Used by SetEntry to perform jumps between distant records when a TRecordReader must switch entry range.
+   std::unordered_map<ULong64_t, TRecordReader::pos_type> fEntryPositions;
 
 public:
    explicit TMDFDataSource(const std::vector<std::string> &fileNames)
